@@ -1,0 +1,117 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Snake</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="game-shell">
+        <header class="game-header">
+          <div>
+            <h1>Snake</h1>
+            <p class="sub">Classic grid movement. Eat, grow, don't crash.</p>
+          </div>
+          <div class="scoreboard">
+            <div class="score">
+              <span>Score</span>
+              <strong id="score">0</strong>
+            </div>
+            <div class="score">
+              <span>High</span>
+              <strong id="highScore">0</strong>
+            </div>
+            <div class="score">
+              <span>Level</span>
+              <strong id="levelLabel">1</strong>
+            </div>
+            <div class="score">
+              <span>Time</span>
+              <strong id="timeLabel">--</strong>
+            </div>
+          </div>
+        </header>
+        <div class="toolbar">
+          <label class="difficulty">
+            <span>Difficulty</span>
+            <select id="difficultySelect">
+              <option value="easy">Easy</option>
+              <option value="normal" selected>Normal</option>
+              <option value="hard">Hard</option>
+            </select>
+          </label>
+          <label class="difficulty">
+            <span>Mode</span>
+            <select id="modeSelect">
+              <option value="classic" selected>Classic</option>
+              <option value="timed">Timed 60s</option>
+            </select>
+          </label>
+          <label class="toggle">
+            <span>Wrap Walls</span>
+            <input id="wrapToggle" type="checkbox" />
+          </label>
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <span>Games</span>
+            <strong id="gamesPlayed">0</strong>
+          </div>
+          <div class="stat">
+            <span>Avg</span>
+            <strong id="avgScore">0</strong>
+          </div>
+          <div class="stat">
+            <span>Best</span>
+            <strong id="bestScore">0</strong>
+          </div>
+          <div class="stat">
+            <span>Best Lvl</span>
+            <strong id="bestLevel">1</strong>
+          </div>
+        </div>
+        <div class="game-area">
+          <canvas id="board" width="480" height="480" aria-label="Snake game board"></canvas>
+          <div class="toast" id="toast">Level 2</div>
+          <div class="overlay" id="overlay">
+            <div class="overlay-card">
+              <h2 id="statusTitle">Press Start</h2>
+              <p id="statusHint">Use arrow keys, WASD, or swipe to move.</p>
+              <button id="startBtn" class="primary">Start</button>
+            </div>
+          </div>
+        </div>
+        <section class="keybinds">
+          <div class="keybind-row">
+            <span>Controls</span>
+            <button class="ghost small" id="resetKeysBtn">Reset</button>
+          </div>
+          <div class="keybind-grid">
+            <button class="ghost small keybind" data-bind="up">Up: <strong id="bindUp">Arrow Up</strong></button>
+            <button class="ghost small keybind" data-bind="down">Down: <strong id="bindDown">Arrow Down</strong></button>
+            <button class="ghost small keybind" data-bind="left">Left: <strong id="bindLeft">Arrow Left</strong></button>
+            <button class="ghost small keybind" data-bind="right">Right: <strong id="bindRight">Arrow Right</strong></button>
+          </div>
+          <p class="hint">Click a button to rebind. Press Esc to cancel.</p>
+        </section>
+        <footer class="controls">
+          <div class="control-row">
+            <button class="ghost" data-action="left">L</button>
+            <div class="stack">
+              <button class="ghost" data-action="up">U</button>
+              <button class="ghost" data-action="down">D</button>
+            </div>
+            <button class="ghost" data-action="right">R</button>
+          </div>
+          <div class="control-row">
+            <button class="ghost" id="pauseBtn">Pause</button>
+            <button class="ghost" id="restartBtn">Restart</button>
+          </div>
+        </footer>
+      </section>
+    </main>
+    <script src="game.js"></script>
+  </body>
+</html>
