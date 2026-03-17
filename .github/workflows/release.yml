@@ -44,3 +44,16 @@ jobs:
           tag_name: ${{ inputs.version }}
           name: ${{ inputs.version }}
           body_path: release-notes.txt
+
+      - name: Email release notes
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASS }}
+          subject: "Snake release ${{ inputs.version }}"
+          to: "abmsam1234@gmail.com"
+          from: "Snake CI <${{ secrets.SMTP_USER }}>"
+          body: "Release ${{ inputs.version }} is live. See GitHub Releases for details."

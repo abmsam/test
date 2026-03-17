@@ -15,13 +15,16 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install Playwright
+      - name: Install tools
         run: |
-          npm install -g playwright@1.44.0
+          npm install -g playwright@1.44.0 pixelmatch@5.3.0 pngjs@7.0.0
           npx playwright install --with-deps chromium
 
       - name: Capture screenshots
         run: node scripts/screenshot.js
+
+      - name: Compare screenshots
+        run: node scripts/compare-screens.js
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

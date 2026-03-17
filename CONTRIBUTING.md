@@ -23,3 +23,7 @@ Thanks for your interest in improving Snake. This project keeps tooling minimal.
 3. Test manually in the browser.
 4. Run CI checks if available.
 5. Open a pull request with a short summary and a verification checklist.
+
+## Screenshots
+
+You can run the screenshot workflow from GitHub Actions to capture baselines.
