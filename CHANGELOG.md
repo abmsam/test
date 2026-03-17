@@ -2,6 +2,5 @@
 
 ## Unreleased
 
-- PWA offline support (service worker + manifest).
-- Local leaderboard and stats reset.
-- Settings persistence and auto-pause.
+- Diagnostics log panel with export.
+- Release workflow and health checks.

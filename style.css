@@ -224,7 +224,8 @@ canvas {
   cursor: pointer;
 }
 
-.leaderboard {
+.leaderboard,
+.diagnostics {
   margin-top: 18px;
   background: #f7f9fc;
   border-radius: 12px;
@@ -246,6 +247,29 @@ canvas {
 }
 
 .leader-item span {
+  color: #5e6b76;
+  font-size: 12px;
+}
+
+.diag-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.log-list {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: #2b3741;
+}
+
+.log-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 13px;
+}
+
+.log-item span {
   color: #5e6b76;
   font-size: 12px;
 }

@@ -19,4 +19,6 @@ jobs:
           node-version: 20
 
       - name: Run checks
-        run: node scripts/checks.js
+        run: |
+          node scripts/checks.js
+          node scripts/health-check.js

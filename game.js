@@ -21,10 +21,13 @@ const pauseBtn = document.getElementById("pauseBtn");
 const restartBtn = document.getElementById("restartBtn");
 const resetKeysBtn = document.getElementById("resetKeysBtn");
 const resetStatsBtn = document.getElementById("resetStatsBtn");
+const exportLogsBtn = document.getElementById("exportLogsBtn");
+const clearLogsBtn = document.getElementById("clearLogsBtn");
 const controlButtons = Array.from(document.querySelectorAll("[data-action]"));
 const keybindButtons = Array.from(document.querySelectorAll(".keybind"));
 const toast = document.getElementById("toast");
 const leaderList = document.getElementById("leaderList");
+const logList = document.getElementById("logList");
 
 const GRID_SIZE = 20;
 const CELL_SIZE = canvas.width / GRID_SIZE;
@@ -33,9 +36,11 @@ const TIMED_DURATION_MS = 60000;
 const STORAGE_KEY = "snake_stats_v2";
 const KEYBINDS_KEY = "snake_keybinds";
 const SETTINGS_KEY = "snake_settings";
+const LOGS_KEY = "snake_logs";
 const POWERUP_TTL_MS = 9000;
 const POWERUP_EFFECT_MS = 6000;
 const MAX_LEADERBOARD = 5;
+const MAX_LOGS = 25;
 
 const DIFFICULTY = {
   easy: { label: "Easy", tick: 150, speedPerLevel: 4, obstaclesPerLevel: 1 },
@@ -113,6 +118,21 @@ function loadStats() {
 
 function saveStats(stats) {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
+}
+
+function loadLogs() {
+  try {
+    const raw = window.localStorage.getItem(LOGS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveLogs(logs) {
+  window.localStorage.setItem(LOGS_KEY, JSON.stringify(logs));
 }
 
 function loadKeybinds() {
@@ -357,12 +377,67 @@ function canChangeDirection(current, next) {
 }
 
 let stats = loadStats();
+let logs = loadLogs();
 let state = createInitialState();
 let timerId = null;
 let currentDifficulty = "normal";
 let keybinds = loadKeybinds();
 let listeningFor = null;
 let toastTimeout = null;
+
+function logEvent(type, detail) {
+  const entry = {
+    type,
+    detail,
+    time: new Date().toISOString(),
+  };
+  logs.unshift(entry);
+  logs = logs.slice(0, MAX_LOGS);
+  saveLogs(logs);
+  updateLogsUI();
+}
+
+function updateLogsUI() {
+  logList.innerHTML = "";
+  if (!logs.length) {
+    const li = document.createElement("li");
+    li.textContent = "No diagnostics yet.";
+    logList.appendChild(li);
+    return;
+  }
+  logs.forEach((entry) => {
+    const li = document.createElement("li");
+    li.className = "log-item";
+    const main = document.createElement("div");
+    main.textContent = `${entry.type}: ${entry.detail}`;
+    const meta = document.createElement("span");
+    meta.textContent = new Date(entry.time).toLocaleString();
+    li.appendChild(main);
+    li.appendChild(meta);
+    logList.appendChild(li);
+  });
+}
+
+function exportLogs() {
+  const payload = {
+    generatedAt: new Date().toISOString(),
+    logs,
+    stats,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "snake-logs.json";
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function clearLogs() {
+  logs = [];
+  saveLogs(logs);
+  updateLogsUI();
+}
 
 function setOverlay(visible, title, hint) {
   if (visible) {
@@ -621,6 +696,7 @@ function finishGame(nextState) {
   saveStats(stats);
   updateStatsUI();
   updateLeaderboardUI();
+  logEvent("game_over", `Score ${nextState.score}, Level ${nextState.level}`);
 }
 
 function tick() {
@@ -657,6 +733,7 @@ function startGame() {
   state.running = true;
   setOverlay(false);
   startTimer();
+  logEvent("start", `Mode ${state.mode}, Difficulty ${currentDifficulty}`);
 }
 
 function pauseGame(reason) {
@@ -664,6 +741,7 @@ function pauseGame(reason) {
   stopTimer();
   const hint = reason === "blur" ? "Click to resume." : "Press Start or Space to continue.";
   setOverlay(true, "Paused", hint);
+  logEvent("pause", reason || "manual");
 }
 
 function restartGame() {
@@ -671,6 +749,7 @@ function restartGame() {
   stopTimer();
   setOverlay(true, "Press Start", "Use arrow keys, WASD, or swipe to move.");
   render();
+  logEvent("restart", "manual");
 }
 
 function handleDirectionChange(nextDirection) {
@@ -833,6 +912,17 @@ function resetStats() {
   saveStats(stats);
   updateStatsUI();
   updateLeaderboardUI();
+  logEvent("stats_reset", "manual");
+}
+
+function registerDiagnostics() {
+  window.addEventListener("error", (event) => {
+    logEvent("error", event.message || "Unknown error");
+  });
+  window.addEventListener("unhandledrejection", (event) => {
+    const reason = event.reason?.message || String(event.reason || "Unknown rejection");
+    logEvent("promise", reason);
+  });
 }
 
 let touchStart = null;
@@ -870,6 +960,8 @@ pauseBtn.addEventListener("click", () => pauseGame());
 restartBtn.addEventListener("click", restartGame);
 resetKeysBtn.addEventListener("click", resetKeybinds);
 resetStatsBtn.addEventListener("click", resetStats);
+exportLogsBtn.addEventListener("click", exportLogs);
+clearLogsBtn.addEventListener("click", clearLogs);
 
 difficultySelect.addEventListener("change", (event) => {
   setDifficulty(event.target.value);
@@ -909,9 +1001,11 @@ window.addEventListener("blur", () => {
   }
 });
 
+registerDiagnostics();
 restoreSettings();
 updateKeybindUI();
 updateStatsUI();
 updateLeaderboardUI();
+updateLogsUI();
 render();
 setOverlay(true, "Press Start", "Use arrow keys, WASD, or swipe to move.");

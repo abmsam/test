@@ -18,6 +18,7 @@ A classic Snake game with modern quality-of-life features and lightweight UI. Bu
 - Keyboard, on-screen, and swipe controls
 - Auto-pause on blur (optional)
 - Offline support (PWA)
+- Diagnostics log with export
 
 ## Run Locally
 
@@ -38,10 +39,12 @@ Open `index.html` in any browser. No build steps required.
 - `sw.js` Service worker (offline cache)
 - `manifest.json` PWA manifest
 - `scripts/checks.js` Basic repo checks
+- `scripts/health-check.js` DOM sanity checks
 
-## CI
+## CI & Releases
 
-The project includes a small GitHub Actions workflow that verifies required assets and PWA cache entries.
+- `CI` verifies required assets and DOM hooks.
+- `Release` workflow can tag and publish a GitHub release.
 
 ## License
 
