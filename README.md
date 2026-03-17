@@ -46,7 +46,8 @@ Open `index.html` in any browser. No build steps required.
 ## CI & Releases
 
 - `CI` verifies required assets, DOM hooks, accessibility, and perf budgets.
-- `Release` workflow can tag and publish a GitHub release.
+- `Release` workflow can tag and publish a GitHub release with notes.
+- `Lighthouse` workflow can generate performance reports.
 
 ## Versioning
 

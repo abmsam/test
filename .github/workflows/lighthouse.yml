@@ -1,0 +1,27 @@
+﻿name: Lighthouse
+
+on:
+  workflow_dispatch:
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install tools
+        run: |
+          npm install -g @lhci/cli@0.13.x http-server@14
+
+      - name: Run Lighthouse (static)
+        run: |
+          npx http-server -p 4173 -c-1 . &
+          sleep 2
+          lhci collect --config=lighthouserc.js
+          lhci assert --config=lighthouserc.js

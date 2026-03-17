@@ -7,10 +7,6 @@ on:
         description: "Release version (e.g., v1.0.0)"
         required: true
         type: string
-      notes:
-        description: "Release notes"
-        required: false
-        type: string
 
 permissions:
   contents: write
@@ -29,9 +25,14 @@ jobs:
           git tag ${{ inputs.version }}
           git push origin ${{ inputs.version }}
 
+      - name: Extract release notes
+        id: notes
+        run: |
+          node scripts/release-notes.js ${{ inputs.version }} > release-notes.txt
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.version }}
           name: ${{ inputs.version }}
-          body: ${{ inputs.notes }}
+          body_path: release-notes.txt
