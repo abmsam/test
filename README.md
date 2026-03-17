@@ -37,6 +37,11 @@ Open `index.html` in any browser. No build steps required.
 - `game.js` Game logic and rendering
 - `sw.js` Service worker (offline cache)
 - `manifest.json` PWA manifest
+- `scripts/checks.js` Basic repo checks
+
+## CI
+
+The project includes a small GitHub Actions workflow that verifies required assets and PWA cache entries.
 
 ## License
 
