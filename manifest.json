@@ -1,0 +1,16 @@
+﻿{
+  "name": "Snake",
+  "short_name": "Snake",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#121a1f",
+  "theme_color": "#1f2830",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

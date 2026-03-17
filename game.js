@@ -859,6 +859,12 @@ function handleTouchMove(event) {
   touchStart = null;
 }
 
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js");
+  });
+}
+
 startBtn.addEventListener("click", startGame);
 pauseBtn.addEventListener("click", () => pauseGame());
 restartBtn.addEventListener("click", restartGame);
