@@ -4,7 +4,6 @@ const path = require("path");
 
 const root = path.resolve(__dirname, "..");
 const outDir = path.join(root, "artifacts");
-const baselineDir = path.join(root, "artifacts", "baseline");
 
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) {
@@ -14,7 +13,6 @@ function ensureDir(dir) {
 
 async function main() {
   ensureDir(outDir);
-  ensureDir(baselineDir);
 
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
@@ -22,8 +20,7 @@ async function main() {
   const fileUrl = `file://${path.join(root, "index.html")}`;
   await page.goto(fileUrl);
   await page.waitForTimeout(600);
-  const homePath = path.join(outDir, "home.png");
-  await page.screenshot({ path: homePath, fullPage: true });
+  await page.screenshot({ path: path.join(outDir, "home.png"), fullPage: true });
 
   const startBtn = await page.$("#startBtn");
   if (startBtn) {

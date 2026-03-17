@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = "snake-cache-v1";
+﻿const CACHE_NAME = "snake-cache-v2";
 const ASSETS = [
   ".",
   "index.html",
@@ -6,6 +6,8 @@ const ASSETS = [
   "game.js",
   "manifest.json",
   "icon.svg",
+  "status.html",
+  "status.json",
 ];
 
 self.addEventListener("install", (event) => {

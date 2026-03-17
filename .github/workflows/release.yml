@@ -20,12 +20,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Update changelog
+      - name: Update changelog and status
         run: |
           node scripts/update-changelog.js ${{ inputs.version }}
+          node scripts/update-status.js ${{ inputs.version }}
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add CHANGELOG.md
+          git add CHANGELOG.md status.json
           git commit -m "chore: release ${{ inputs.version }}" || echo "No changelog changes"
           git push
 
@@ -56,4 +57,8 @@ jobs:
           subject: "Snake release ${{ inputs.version }}"
           to: "abmsam1234@gmail.com"
           from: "Snake CI <${{ secrets.SMTP_USER }}>"
-          body: "Release ${{ inputs.version }} is live. See GitHub Releases for details."
+          body: |
+            Release ${{ inputs.version }} is live.
+
+            Notes:
+            $(cat release-notes.txt)

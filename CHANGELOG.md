@@ -8,3 +8,4 @@
 - Release notes automation and Lighthouse workflow.
 - Screenshot regression workflow and release automation updates.
 - Email notifications for releases.
+- Status page and badges.

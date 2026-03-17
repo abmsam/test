@@ -6,18 +6,18 @@ const pixelmatch = require("pixelmatch");
 const root = path.resolve(__dirname, "..");
 const artifactsDir = path.join(root, "artifacts");
 const baselineDir = path.join(artifactsDir, "baseline");
+const diffDir = path.join(artifactsDir, "diff");
 
-function copyBaseline(name) {
-  const src = path.join(artifactsDir, name);
-  const dest = path.join(baselineDir, name);
-  fs.copyFileSync(src, dest);
+function ensureDir(dir) {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
 }
 
 function compareImages(name) {
   const baselinePath = path.join(baselineDir, name);
   const currentPath = path.join(artifactsDir, name);
   if (!fs.existsSync(baselinePath)) {
-    copyBaseline(name);
     return 0;
   }
   const img1 = PNG.sync.read(fs.readFileSync(baselinePath));
@@ -26,9 +26,11 @@ function compareImages(name) {
   const diff = new PNG({ width, height });
   const mismatch = pixelmatch(img1.data, img2.data, diff.data, width, height, { threshold: 0.1 });
   if (mismatch > 0) {
-    return mismatch;
+    ensureDir(diffDir);
+    const diffPath = path.join(diffDir, name);
+    fs.writeFileSync(diffPath, PNG.sync.write(diff));
   }
-  return 0;
+  return mismatch;
 }
 
 const homeMismatch = compareImages("home.png");

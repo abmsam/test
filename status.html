@@ -1,0 +1,46 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Snake Status</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="game-shell">
+        <h1>Project Status</h1>
+        <p class="sub">Latest release and deployment info.</p>
+        <div class="stats">
+          <div class="stat">
+            <span>Version</span>
+            <strong id="statusVersion">--</strong>
+          </div>
+          <div class="stat">
+            <span>Updated</span>
+            <strong id="statusUpdated">--</strong>
+          </div>
+          <div class="stat">
+            <span>Site</span>
+            <strong><a id="statusSite" href="#">--</a></strong>
+          </div>
+        </div>
+        <p class="hint">This page is updated automatically on each release.</p>
+      </section>
+    </main>
+    <script>
+      fetch("status.json")
+        .then((res) => res.json())
+        .then((data) => {
+          document.getElementById("statusVersion").textContent = data.version || "--";
+          document.getElementById("statusUpdated").textContent = data.updatedAt || "--";
+          const link = document.getElementById("statusSite");
+          link.textContent = data.site || "--";
+          link.href = data.site || "#";
+        })
+        .catch(() => {
+          document.getElementById("statusVersion").textContent = "Unavailable";
+        });
+    </script>
+  </body>
+</html>

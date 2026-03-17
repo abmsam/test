@@ -9,6 +9,8 @@ const requiredFiles = [
   "manifest.json",
   "sw.js",
   "icon.svg",
+  "status.html",
+  "status.json",
 ];
 
 function assert(condition, message) {
