@@ -13,21 +13,24 @@ if (!version) {
 const changelog = fs.readFileSync(changelogPath, "utf8");
 const lines = changelog.split(/\r?\n/);
 
-const headerIndex = lines.findIndex((line) => line.trim() === "## Unreleased");
-if (headerIndex === -1) {
-  console.error("CHANGELOG missing 'Unreleased' section");
-  process.exit(1);
-}
-
-const section = [];
-for (let i = headerIndex + 1; i < lines.length; i += 1) {
-  if (lines[i].startsWith("## ")) {
-    break;
+function extractSection(header) {
+  const start = lines.findIndex((line) => line.trim() === header);
+  if (start === -1) return null;
+  let end = lines.length;
+  for (let i = start + 1; i < lines.length; i += 1) {
+    if (lines[i].startsWith("## ")) {
+      end = i;
+      break;
+    }
   }
-  section.push(lines[i]);
+  return lines.slice(start + 1, end).join("\n").trim();
 }
 
-const trimmed = section.join("\n").trim();
-const content = trimmed.length ? trimmed : "- No notes yet.";
+const versionHeader = `## ${version}`;
+let notes = extractSection(versionHeader);
+if (!notes) {
+  notes = extractSection("## Unreleased") || "- No notes yet.";
+}
 
-console.log(`# ${version}\n\n${content}`);
+const output = `# ${version}\n\n${notes.length ? notes : "- No notes yet."}`;
+console.log(output);

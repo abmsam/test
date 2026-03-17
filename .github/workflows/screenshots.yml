@@ -1,0 +1,30 @@
+﻿name: Screenshot Regression
+
+on:
+  workflow_dispatch:
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Playwright
+        run: |
+          npm install -g playwright@1.44.0
+          npx playwright install --with-deps chromium
+
+      - name: Capture screenshots
+        run: node scripts/screenshot.js
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: artifacts

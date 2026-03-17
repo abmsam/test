@@ -42,12 +42,16 @@ Open `index.html` in any browser. No build steps required.
 - `scripts/health-check.js` DOM sanity checks
 - `scripts/accessibility-check.js` A11y checks
 - `scripts/perf-check.js` Perf budget checks
+- `scripts/release-notes.js` Release notes generator
+- `scripts/update-changelog.js` Changelog updater
+- `scripts/screenshot.js` Screenshot capture
 
 ## CI & Releases
 
 - `CI` verifies required assets, DOM hooks, accessibility, and perf budgets.
-- `Release` workflow can tag and publish a GitHub release with notes.
-- `Lighthouse` workflow can generate performance reports.
+- `Release` workflow updates CHANGELOG and publishes GitHub Releases.
+- `Lighthouse` workflow generates performance reports.
+- `Screenshot Regression` workflow captures baseline UI snapshots.
 
 ## Versioning
 

@@ -20,13 +20,21 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Update changelog
+        run: |
+          node scripts/update-changelog.js ${{ inputs.version }}
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "chore: release ${{ inputs.version }}" || echo "No changelog changes"
+          git push
+
       - name: Create tag
         run: |
           git tag ${{ inputs.version }}
           git push origin ${{ inputs.version }}
 
       - name: Extract release notes
-        id: notes
         run: |
           node scripts/release-notes.js ${{ inputs.version }} > release-notes.txt
 
