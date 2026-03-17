@@ -4,6 +4,7 @@ const scoreEl = document.getElementById("score");
 const highScoreEl = document.getElementById("highScore");
 const levelLabel = document.getElementById("levelLabel");
 const timeLabel = document.getElementById("timeLabel");
+const effectLabel = document.getElementById("effectLabel");
 const gamesPlayedEl = document.getElementById("gamesPlayed");
 const avgScoreEl = document.getElementById("avgScore");
 const bestScoreEl = document.getElementById("bestScore");
@@ -11,6 +12,7 @@ const bestLevelEl = document.getElementById("bestLevel");
 const difficultySelect = document.getElementById("difficultySelect");
 const modeSelect = document.getElementById("modeSelect");
 const wrapToggle = document.getElementById("wrapToggle");
+const autoPauseToggle = document.getElementById("autoPauseToggle");
 const overlay = document.getElementById("overlay");
 const statusTitle = document.getElementById("statusTitle");
 const statusHint = document.getElementById("statusHint");
@@ -18,18 +20,22 @@ const startBtn = document.getElementById("startBtn");
 const pauseBtn = document.getElementById("pauseBtn");
 const restartBtn = document.getElementById("restartBtn");
 const resetKeysBtn = document.getElementById("resetKeysBtn");
+const resetStatsBtn = document.getElementById("resetStatsBtn");
 const controlButtons = Array.from(document.querySelectorAll("[data-action]"));
 const keybindButtons = Array.from(document.querySelectorAll(".keybind"));
 const toast = document.getElementById("toast");
+const leaderList = document.getElementById("leaderList");
 
 const GRID_SIZE = 20;
 const CELL_SIZE = canvas.width / GRID_SIZE;
 const SCORE_PER_LEVEL = 5;
 const TIMED_DURATION_MS = 60000;
-const STORAGE_KEY = "snake_stats";
+const STORAGE_KEY = "snake_stats_v2";
 const KEYBINDS_KEY = "snake_keybinds";
+const SETTINGS_KEY = "snake_settings";
 const POWERUP_TTL_MS = 9000;
 const POWERUP_EFFECT_MS = 6000;
+const MAX_LEADERBOARD = 5;
 
 const DIFFICULTY = {
   easy: { label: "Easy", tick: 150, speedPerLevel: 4, obstaclesPerLevel: 1 },
@@ -90,7 +96,7 @@ function loadStats() {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) {
-      return { gamesPlayed: 0, totalScore: 0, bestScore: 0, bestLevel: 1 };
+      return { gamesPlayed: 0, totalScore: 0, bestScore: 0, bestLevel: 1, history: [] };
     }
     const parsed = JSON.parse(raw);
     return {
@@ -98,9 +104,10 @@ function loadStats() {
       totalScore: Number(parsed.totalScore) || 0,
       bestScore: Number(parsed.bestScore) || 0,
       bestLevel: Number(parsed.bestLevel) || 1,
+      history: Array.isArray(parsed.history) ? parsed.history : [],
     };
   } catch (error) {
-    return { gamesPlayed: 0, totalScore: 0, bestScore: 0, bestLevel: 1 };
+    return { gamesPlayed: 0, totalScore: 0, bestScore: 0, bestLevel: 1, history: [] };
   }
 }
 
@@ -126,6 +133,20 @@ function loadKeybinds() {
 
 function saveKeybinds(bindings) {
   window.localStorage.setItem(KEYBINDS_KEY, JSON.stringify(bindings));
+}
+
+function loadSettings() {
+  try {
+    const raw = window.localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (error) {
+    return null;
+  }
+}
+
+function saveSettings(settings) {
+  window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }
 
 function formatKeyLabel(key) {
@@ -499,6 +520,37 @@ function updateStatsUI() {
   highScoreEl.textContent = stats.bestScore;
 }
 
+function updateLeaderboardUI() {
+  leaderList.innerHTML = "";
+  if (!stats.history.length) {
+    const li = document.createElement("li");
+    li.textContent = "No games yet.";
+    leaderList.appendChild(li);
+    return;
+  }
+  stats.history.slice(0, MAX_LEADERBOARD).forEach((entry, index) => {
+    const li = document.createElement("li");
+    li.className = "leader-item";
+    const main = document.createElement("div");
+    main.textContent = `#${index + 1} Score ${entry.score} (Lv ${entry.level})`;
+    const meta = document.createElement("span");
+    meta.textContent = entry.date;
+    li.appendChild(main);
+    li.appendChild(meta);
+    leaderList.appendChild(li);
+  });
+}
+
+function updateEffectUI() {
+  if (!state.activeEffect) {
+    effectLabel.textContent = "None";
+    return;
+  }
+  const label = POWERUPS[state.activeEffect.type]?.label || "Effect";
+  const seconds = Math.ceil(state.activeEffect.remainingMs / 1000);
+  effectLabel.textContent = `${label} ${seconds}s`;
+}
+
 function render() {
   drawGrid();
   drawFood();
@@ -508,6 +560,7 @@ function render() {
   scoreEl.textContent = state.score;
   levelLabel.textContent = state.level;
   timeLabel.textContent = formatTime(state.timeRemainingMs);
+  updateEffectUI();
 }
 
 function updateTimedState() {
@@ -523,8 +576,8 @@ function updateTimedState() {
 }
 
 function updatePowerUpTimers(nextState) {
+  const tickMs = getTickMs(nextState.level, currentDifficulty, nextState.activeEffect);
   if (nextState.powerUp) {
-    const tickMs = getTickMs(nextState.level, currentDifficulty, nextState.activeEffect);
     const ttl = nextState.powerUp.ttlMs - tickMs;
     if (ttl <= 0) {
       nextState = { ...nextState, powerUp: null };
@@ -536,7 +589,6 @@ function updatePowerUpTimers(nextState) {
     }
   }
   if (nextState.activeEffect) {
-    const tickMs = getTickMs(nextState.level, currentDifficulty, nextState.activeEffect);
     const remaining = nextState.activeEffect.remainingMs - tickMs;
     if (remaining <= 0) {
       nextState = { ...nextState, activeEffect: null };
@@ -559,8 +611,16 @@ function finishGame(nextState) {
   if (nextState.level > stats.bestLevel) {
     stats.bestLevel = nextState.level;
   }
+  const now = new Date();
+  stats.history.unshift({
+    score: nextState.score,
+    level: nextState.level,
+    date: now.toLocaleDateString(),
+  });
+  stats.history = stats.history.slice(0, MAX_LEADERBOARD);
   saveStats(stats);
   updateStatsUI();
+  updateLeaderboardUI();
 }
 
 function tick() {
@@ -599,10 +659,11 @@ function startGame() {
   startTimer();
 }
 
-function pauseGame() {
+function pauseGame(reason) {
   state.running = false;
   stopTimer();
-  setOverlay(true, "Paused", "Press Start or Space to continue.");
+  const hint = reason === "blur" ? "Click to resume." : "Press Start or Space to continue.";
+  setOverlay(true, "Paused", hint);
 }
 
 function restartGame() {
@@ -665,6 +726,7 @@ function setDifficulty(value) {
   if (state.running) {
     startTimer();
   }
+  persistSettings();
 }
 
 function setMode(value) {
@@ -684,11 +746,17 @@ function setMode(value) {
   } else {
     stopTimer();
   }
+  persistSettings();
   render();
 }
 
 function setWrapWalls(value) {
   state = { ...state, wrapWalls: value };
+  persistSettings();
+}
+
+function setAutoPause(value) {
+  persistSettings();
 }
 
 function updateKeybindUI() {
@@ -737,6 +805,36 @@ function resetKeybinds() {
   updateKeybindUI();
 }
 
+function persistSettings() {
+  saveSettings({
+    difficulty: currentDifficulty,
+    mode: modeSelect.value,
+    wrapWalls: wrapToggle.checked,
+    autoPause: autoPauseToggle.checked,
+  });
+}
+
+function restoreSettings() {
+  const settings = loadSettings();
+  if (!settings) return;
+  if (settings.difficulty && DIFFICULTY[settings.difficulty]) {
+    currentDifficulty = settings.difficulty;
+    difficultySelect.value = settings.difficulty;
+  }
+  if (settings.mode && MODES[settings.mode]) {
+    modeSelect.value = settings.mode;
+  }
+  wrapToggle.checked = Boolean(settings.wrapWalls);
+  autoPauseToggle.checked = settings.autoPause !== false;
+}
+
+function resetStats() {
+  stats = { gamesPlayed: 0, totalScore: 0, bestScore: 0, bestLevel: 1, history: [] };
+  saveStats(stats);
+  updateStatsUI();
+  updateLeaderboardUI();
+}
+
 let touchStart = null;
 
 function handleTouchStart(event) {
@@ -762,9 +860,10 @@ function handleTouchMove(event) {
 }
 
 startBtn.addEventListener("click", startGame);
-pauseBtn.addEventListener("click", pauseGame);
+pauseBtn.addEventListener("click", () => pauseGame());
 restartBtn.addEventListener("click", restartGame);
 resetKeysBtn.addEventListener("click", resetKeybinds);
+resetStatsBtn.addEventListener("click", resetStats);
 
 difficultySelect.addEventListener("change", (event) => {
   setDifficulty(event.target.value);
@@ -776,6 +875,10 @@ modeSelect.addEventListener("change", (event) => {
 
 wrapToggle.addEventListener("change", (event) => {
   setWrapWalls(event.target.checked);
+});
+
+autoPauseToggle.addEventListener("change", (event) => {
+  setAutoPause(event.target.checked);
 });
 
 keybindButtons.forEach((button) => {
@@ -794,8 +897,15 @@ controlButtons.forEach((button) => {
 document.addEventListener("keydown", handleKey);
 canvas.addEventListener("touchstart", handleTouchStart, { passive: true });
 canvas.addEventListener("touchmove", handleTouchMove, { passive: true });
+window.addEventListener("blur", () => {
+  if (autoPauseToggle.checked && state.running) {
+    pauseGame("blur");
+  }
+});
 
+restoreSettings();
 updateKeybindUI();
 updateStatsUI();
+updateLeaderboardUI();
 render();
 setOverlay(true, "Press Start", "Use arrow keys, WASD, or swipe to move.");
