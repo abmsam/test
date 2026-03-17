@@ -40,11 +40,17 @@ Open `index.html` in any browser. No build steps required.
 - `manifest.json` PWA manifest
 - `scripts/checks.js` Basic repo checks
 - `scripts/health-check.js` DOM sanity checks
+- `scripts/accessibility-check.js` A11y checks
+- `scripts/perf-check.js` Perf budget checks
 
 ## CI & Releases
 
-- `CI` verifies required assets and DOM hooks.
+- `CI` verifies required assets, DOM hooks, accessibility, and perf budgets.
 - `Release` workflow can tag and publish a GitHub release.
+
+## Versioning
+
+See `VERSIONING.md` and `RELEASES.md`.
 
 ## License
 

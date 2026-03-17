@@ -22,3 +22,5 @@ jobs:
         run: |
           node scripts/checks.js
           node scripts/health-check.js
+          node scripts/accessibility-check.js
+          node scripts/perf-check.js
